@@ -132,6 +132,7 @@ define([
                     dataResults.forEach(function (result) {
                         
                         bonApproveModule.setSublistValueAvoidEmpty(sublist, 'custpage_view', j, result.view);
+                        bonApproveModule.setSublistValueAvoidEmpty(sublist, 'custpage_id', j, result.id);
                         bonApproveModule.setSublistValueAvoidEmpty(sublist, 'custpage_trandate', j, result.trandate);
                         bonApproveModule.setSublistValueAvoidEmpty(sublist, 'custpage_tranid', j, result.tranid);
                         bonApproveModule.setSublistValueAvoidEmpty(sublist, 'custpage_entity', j, result.entity);
@@ -163,45 +164,40 @@ define([
 
                 log.debug('numLines ' + typeof numLines, numLines);
 
+                var data = new Array();
+
                 for (var i = 0; i < numLines; i++) {
 
-                    var process = scriptContext.request.getSublistValue({
+                    var approve = scriptContext.request.getSublistValue({
                         group: 'custpage_sublist',
-                        name: 'custpage_process',
+                        name: 'custpage_approve',
                         line: i
                     });
 
-                    // log.debug('check_detail',check_detail);
+                    // log.debug("approve "+typeof approve, approve);
 
-                    if (process == 'T') {
-                        var data = ({
-                            'id_external': scriptContext.request.getSublistValue({ group: 'custpage_sublist', name: 'custpage_id_external', line: i }),
-                            'list_id': scriptContext.request.getSublistValue({ group: 'custpage_sublist', name: 'custpage_list_id', line: i })
-                        });
+                    if (approve == 'T') {
 
-                        log.debug("data " + typeof data, data);
-
-                        var id_bg = module_interco_to_ui.createDataBG(data);
-
-                        var data_bulk = new Object();
-
-                        data_bulk = ({
-                            'id_bg': id_bg,
-                            'data': data
-                        });
-                        log.debug("data_bulk " + typeof data_bulk, data_bulk);
-
-                        if (id_bg) {
-                            log.debug("created id_bg " + typeof id_bg, id_bg);
-                            module_interco_to_sch.submitTaskScheduleSingleQueue(JSON.stringify(data_bulk));
-                        }
+                        data.push(
+                            scriptContext.request.getSublistValue({ group: 'custpage_sublist', name: 'custpage_id', line: i })
+                        );
                     }
-
-                    log.debug('Remaining Usage In Loop ' + i, myScript.getRemainingUsage());
                 }
 
-                redirect.toSavedSearchResult({
-                    id: 1031 //Bulk Interco TO BG Status 1030-Sandbox 1031-Production
+                log.debug("data "+typeof data, data);
+                log.debug('Remaining Usage In Loop ', myScript.getRemainingUsage());
+
+                var parameters = {
+                    'data' : data,
+                    'sourceScript' : myScript
+                }
+
+                redirect.toSuitelet({
+                    scriptId: '594',
+                    deploymentId: '1',
+                    parameters: {
+                        data : JSON.stringify(parameters)
+                    }
                 });
             }
         }

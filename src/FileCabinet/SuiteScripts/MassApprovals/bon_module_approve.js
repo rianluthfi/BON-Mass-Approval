@@ -12,12 +12,13 @@ define([
     ) => {
 
         function setSublistColumn(sublist){
-
             
-
             sublist.addMarkAllButtons();
             sublist.addField({id : 'custpage_approve', label: 'Approve', type: serverWidget.FieldType.CHECKBOX});
             sublist.addField({id : 'custpage_view', label: '.', type: serverWidget.FieldType.URL}).linkText = 'View';
+            sublist.addField({id : 'custpage_id', label: 'ID', type: serverWidget.FieldType.TEXT}).updateDisplayType({
+				displayType: serverWidget.FieldDisplayType.HIDDEN
+			});
             sublist.addField({id : 'custpage_trandate', label: 'Date', type: serverWidget.FieldType.TEXT});
             sublist.addField({id : 'custpage_tranid', label: 'Document Number', type: serverWidget.FieldType.TEXT});
             sublist.addField({id : 'custpage_entity', label: 'Vendor', type: serverWidget.FieldType.TEXT});
