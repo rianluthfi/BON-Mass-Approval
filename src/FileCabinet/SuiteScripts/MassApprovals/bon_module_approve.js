@@ -372,6 +372,31 @@ define([
              return name;
         }
 
+        function pageDontHaveAccess(scriptContext, serverWidget, message){
+            var form = serverWidget.createForm({
+                title: 'YOU DONT HAVE ACCESS',
+                hideNavBar: false
+            });
+
+            var myMsg = message.create({
+				title: "Overdue Balance",
+				message: "Customer\'s overdue balance is ",
+				type: message.Type.INFORMATION
+			});
+		    myMsg.show();
+
+            scriptContext.response.writePage(form);
+        }
+
+        function pageNoDataProcess(scriptContext, serverWidget){
+            var form = serverWidget.createForm({
+                title: 'No Data Process',
+                hideNavBar: false
+            });
+
+            scriptContext.response.writePage(form);
+        }
+
 
         return {
             setSublistColumn,
@@ -381,7 +406,8 @@ define([
             getSearchPOtoApproveByFC,
             getDataPOtoApproveByFC,
             getSearchPOtoApproveByCEO,
-            getDataPOtoApproveByCEO
+            getDataPOtoApproveByCEO,
+            pageDontHaveAccess
 
         }
 
