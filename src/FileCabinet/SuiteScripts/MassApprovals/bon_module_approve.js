@@ -140,7 +140,7 @@ define([
             return results;
         }
 
-        function getSearchPOtoApproveByFC(PAGE_SIZE, subsidiary, location, startdate, enddate){
+        function getSearchPOtoApproveByFC(PAGE_SIZE, subsidiary, location, trans_type, startdate, enddate){
 
             /**
              * Reference Saved Search
@@ -155,15 +155,26 @@ define([
              */
 
             var customFilters = new Array();
-            customFilters.push(["workflow.currentstate","anyof","47"]);
-            customFilters.push("AND");
+            
             customFilters.push(["mainline","is","T"]);
             customFilters.push("AND");
             customFilters.push(["type","anyof","PurchOrd"]);
             customFilters.push("AND");
-            customFilters.push(["workflow.workflow","anyof","22"]);
-            customFilters.push("AND");
             customFilters.push(["approvalstatus","anyof","1"]);
+            customFilters.push("AND");
+            customFilters.push(["custbody_bcg_approved_level_1","is","F"]);
+            
+
+            // Previous filter based on workflow state < 20241121
+            // customFilters.push(["workflow.currentstate","anyof","47"]);
+            // customFilters.push("AND");
+            // customFilters.push(["mainline","is","T"]);
+            // customFilters.push("AND");
+            // customFilters.push(["type","anyof","PurchOrd"]);
+            // customFilters.push("AND");
+            // customFilters.push(["workflow.workflow","anyof","22"]);
+            // customFilters.push("AND");
+            // customFilters.push(["approvalstatus","anyof","1"]);
 
             if (subsidiary){
                 customFilters.push("AND");
@@ -176,6 +187,11 @@ define([
             if (location){
                 customFilters.push("AND");
                 customFilters.push(["location","anyof",location]);
+            }
+
+            if (trans_type){
+                customFilters.push("AND");
+                customFilters.push(["cseg1","anyof",trans_type]);
             }
 
             if (startdate){
@@ -346,6 +362,68 @@ define([
             return results;
         }
 
+        function getDataPObyID(){
+
+            var data = new Array();
+
+            var purchaseorderSearchObj = search.create({
+                type: "purchaseorder",
+                filters:
+                [
+                   ["mainline","is","T"], 
+                   "AND", 
+                   ["type","anyof","PurchOrd"], 
+                   "AND", 
+                   ['internalid', 'anyof', ['6968143', '6968490']]
+                ],
+                columns:
+                [
+                   search.createColumn({name: "type", label: "Type"}),
+                   search.createColumn({name: "trandate", label: "Date"}),
+                   search.createColumn({name: "tranid", label: "Document Number"}),
+                   search.createColumn({name: "approvalstatus", label: "Approval Status"}),
+                   search.createColumn({name: "entity", label: "Name"}),
+                   search.createColumn({name: "subsidiary", label: "Subsidiary"}),
+                   search.createColumn({name: "location", label: "Location"}),
+                   search.createColumn({name: "cseg1", label: "Transaction Type"}),
+                   search.createColumn({name: "amount", label: "Amount"}),
+                   search.createColumn({name: "memomain", label: "Memo"}),
+                   search.createColumn({name: "custbody_bcg_approved_level_1", label: "Approval Level 1"}),
+                   search.createColumn({name: "custbody_bcg_approved_level_2", label: "Approval Level 2"})
+                ]
+            });
+
+            var searchResultCount = purchaseorderSearchObj.runPaged().count;
+            log.debug("purchaseorderSearchObj result count",searchResultCount);
+            purchaseorderSearchObj.run().each(function(result){
+                log.debug("result "+typeof result, result);
+                // .run().each has a limit of 4,000 results
+
+                var subsidiaryId = result.getValue(result.columns[5]);
+                var subsidiaryName = getSubsidiaryNameOnly(subsidiaryId);
+
+                data.push({
+                    'id' : result.id,
+                    'view' : '/app/accounting/transactions/purchord.nl?id='+result.id+'&whence=',
+                    'type' : result.getValue(result.columns[0]),
+                    'trandate' : result.getValue(result.columns[1]),
+                    'tranid' : result.getValue(result.columns[2]),
+                    'approvalstatus' : result.getText(result.columns[3]),
+                    'entity' : result.getText(result.columns[4]),
+                    'subsidiary' : subsidiaryName,
+                    'location' : result.getText(result.columns[6]),
+                    'trans_type' : result.getText(result.columns[7]),
+                    'amount' : parseFloat(result.getValue(result.columns[8])),
+                    'memo' : result.getValue(result.columns[9]),
+                    'approvallevel1' : result.getValue(result.columns[10]),
+                    'approvallevel2' : result.getValue(result.columns[11])
+                });
+                return true;
+            });
+
+            return data;
+        }
+
         function getSubsidiaryNameOnly(id){
 
             var name = "";
@@ -407,7 +485,8 @@ define([
             getDataPOtoApproveByFC,
             getSearchPOtoApproveByCEO,
             getDataPOtoApproveByCEO,
-            pageDontHaveAccess
+            pageDontHaveAccess,
+            getDataPObyID
 
         }
 

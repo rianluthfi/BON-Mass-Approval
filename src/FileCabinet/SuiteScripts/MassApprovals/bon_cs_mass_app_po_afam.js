@@ -31,7 +31,8 @@ function(
             scriptContext.fieldId == 'custpage_param_startdate' || 
             scriptContext.fieldId == 'custpage_param_enddate' || 
             scriptContext.fieldId == 'custpage_param_subsidiary' || 
-            scriptContext.fieldId == 'custpage_param_location'
+            scriptContext.fieldId == 'custpage_param_location' ||
+            scriptContext.fieldId == 'custpage_param_trans_type'
 		) {
 
             var pageId = scriptContext.currentRecord.getValue({fieldId : 'custpage_pageid'});
@@ -39,6 +40,7 @@ function(
             var enddate = scriptContext.currentRecord.getText({fieldId : 'custpage_param_enddate'});
             var subsidiary = scriptContext.currentRecord.getValue({fieldId : 'custpage_param_subsidiary'});
             var location = scriptContext.currentRecord.getValue({fieldId : 'custpage_param_location'});
+            var trans_type = scriptContext.currentRecord.getValue({fieldId : 'custpage_param_trans_type'});
 
             pageId = parseInt(pageId.split('_')[1]);
 
@@ -50,7 +52,8 @@ function(
                     'startdate' : startdate,
                     'enddate'   : enddate,
                     'subsidiary': subsidiary,
-                    'location'  : location
+                    'location'  : location,
+                    'trans_type': trans_type
                 }
             });
 

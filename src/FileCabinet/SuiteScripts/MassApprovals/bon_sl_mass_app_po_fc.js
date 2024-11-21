@@ -61,6 +61,11 @@ define([
                 location = '';
             }
 
+            var trans_type = parameters.trans_type;
+            if (!trans_type || trans_type == '' || trans_type < 0) {
+                trans_type = '';
+            }
+
             /*
                 ID      |   Role Name
                 3	    |   Administrator
@@ -82,8 +87,8 @@ define([
 
             if (scriptContext.request.method === 'GET') {
 
-                // if (userObj.role == 3 || userObj.role == ROLE_APPROVAL){
-                if (userObj.role == ROLE_APPROVAL){      // For testing role
+                if (userObj.role == 3 || userObj.role == ROLE_APPROVAL){
+                // if (userObj.role == ROLE_APPROVAL){      // For testing role
 
                     var form = serverWidget.createForm({
                         title: PAGE_TITLE,
@@ -92,7 +97,7 @@ define([
     
                     form.clientScriptModulePath = PATH_CLIENT_SCRIPT;
     
-                    var dataSearch = bonApproveModule.getSearchPOtoApproveByFC(PAGE_SIZE, subsidiary, location, startdate, enddate);
+                    var dataSearch = bonApproveModule.getSearchPOtoApproveByFC(PAGE_SIZE, subsidiary, location, trans_type, startdate, enddate);
     
                     var pageId = parseInt(scriptContext.request.parameters.page);
     
@@ -134,6 +139,7 @@ define([
                     form.addField({ id: 'custpage_param_enddate', type: serverWidget.FieldType.DATE, label: 'End Date'}).defaultValue = enddate;
                     form.addField({ id: 'custpage_param_subsidiary', type: serverWidget.FieldType.SELECT, label: 'Subsidiary', source: 'subsidiary'}).defaultValue = subsidiary;
                     form.addField({ id: 'custpage_param_location', type: serverWidget.FieldType.SELECT, label: 'Location', source: 'location'}).defaultValue = location;
+                    form.addField({ id: 'custpage_param_trans_type', type: serverWidget.FieldType.SELECT, label: 'Transaction Type', source: 'customrecord_cseg1'}).defaultValue = trans_type;
     
                     var sublist = form.addSublist({
                         id: 'custpage_sublist',
@@ -226,7 +232,7 @@ define([
 
                     log.debug("There is data");
 
-                    bonApproveModuleSch.submitTaskScheduleSingleQueue(parameters);
+                    var task = bonApproveModuleSch.submitTaskScheduleSingleQueue(parameters);
 
                     redirect.toSuitelet({
                         scriptId: '594',        // customscript_bon_sl_mass_app_result

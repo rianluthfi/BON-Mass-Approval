@@ -3,11 +3,13 @@
  * @NScriptType ScheduledScript
  */
 define([
-    'N/runtime'
+    'N/runtime',
+    'N/record'
 ],
     
     (
-        runtime
+        runtime,
+        record
     ) => {
 
         /**
@@ -24,6 +26,28 @@ define([
             }));
 
             log.debug("parameter "+typeof parameter, parameter);
+
+            var data = parameter.data;
+            log.debug("data "+typeof data, data);
+
+            if (data.length > 0){
+                for (var i = 0; i < data.length; i++){
+
+                    log.debug("data[i] "+typeof data[i], data[i]);
+                    var objRecord = record.load({
+                        type: record.Type.PURCHASE_ORDER, 
+                        id: data[i],
+                        isDynamic: true,
+                    });
+
+                    if (parameter.approval_level == '1'){
+                        log.debug("process app level 1");
+                        objRecord.setValue("custbody_bcg_approved_level_1", true);
+                    }
+
+                    objRecord.save();
+                }
+            }
         }
 
         return {execute}
